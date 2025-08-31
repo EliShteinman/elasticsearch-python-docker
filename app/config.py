@@ -1,0 +1,7 @@
+import os
+
+ELESTICSEARCH_WWW = os.getenv("ELESTICSEARCH_WWW", "http")
+ELESTICSEARCH_HOST = os.getenv("ELASTICSEARCH_HOST", "localhost")
+ELESTICSEARCH_PORT = int(os.getenv("ELASTICSEARCH_PORT", 9200))
+ELESTICSEARCH_INDEX = os.getenv("ELASTICSEARCH_INDEX", "demo")
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")

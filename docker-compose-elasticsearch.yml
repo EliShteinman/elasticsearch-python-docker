@@ -1,0 +1,81 @@
+name: elasticsearch-stack-neria
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.1.2
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch_data_neria:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - elastic_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:9.1.2
+    restart: unless-stopped
+    depends_on:
+      elasticsearch: { condition: service_healthy }
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    networks:
+      - elastic_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  cerebro:
+    image: lmenezes/cerebro:latest
+    restart: unless-stopped
+    depends_on:
+      elasticsearch: { condition: service_healthy }
+    ports:
+      - "9000:9000"
+    environment:
+      - CEREBRO_PORT=9000
+    networks:
+      - elastic_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  neria:
+    build:
+      context: app
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      elasticsearch: { condition: service_healthy }
+    ports:
+      - "8182:8182"
+    environment:
+      - ELASTICSEARCH_WWW=http
+      - ELASTICSEARCH_HOST=elasticsearch
+      - ELASTICSEARCH_PORT=9200
+      - LOG_LEVEL=INFO
+    networks:
+      - elastic_network
+
+volumes:
+  elasticsearch_data_neria:
+
+networks:
+  elastic_network:
+    driver: bridge
