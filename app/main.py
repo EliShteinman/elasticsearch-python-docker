@@ -1,20 +1,14 @@
 import logging
-import sys
-import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from elasticsearch import Elasticsearch
 
-# Add the app directory to the Python path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-import config
-from services.elasticsearch_service import ElasticsearchService
-from services.data_loader import NewsDataLoader
-from models import DocumentCreate
-from routers import documents, search, data, analytics
-import dependencies
+from app import config, dependencies
+from app.services.elasticsearch_service import ElasticsearchService
+from app.services.data_loader import NewsDataLoader
+from app.models import DocumentCreate
+from app.routers import documents, search, data, analytics
 
 logging.basicConfig(
     level=getattr(logging, config.LOG_LEVEL, logging.INFO),
@@ -23,15 +17,9 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-# Global variables
-es_client = None
-es_service = None
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global es_client, es_service
-
     logger.info("Starting application lifespan startup")
 
     try:
@@ -49,7 +37,7 @@ async def lifespan(app: FastAPI):
         es_service = ElasticsearchService(es_client, config.ELESTICSEARCH_INDEX)
         await es_service.initialize_index()
 
-        # Set the service in dependencies
+        # Set the service in dependencies (this is the proper way)
         dependencies.set_es_service(es_service)
 
         # Load sample data if index is empty
@@ -57,8 +45,8 @@ async def lifespan(app: FastAPI):
         if search_result.total_hits == 0:
             logger.info("Index is empty, loading sample data...")
             sample_data = NewsDataLoader.load_sample_data()
-            documents = [DocumentCreate(**doc) for doc in sample_data]
-            bulk_result = await es_service.bulk_create_documents(documents)
+            documents_data = [DocumentCreate(**doc) for doc in sample_data]
+            bulk_result = await es_service.bulk_create_documents(documents_data)
             logger.info(f"Loaded {bulk_result['success_count']} sample documents")
 
         logger.info("Application startup completed successfully")
@@ -70,12 +58,6 @@ async def lifespan(app: FastAPI):
     yield
 
     logger.info("Application shutdown completed")
-
-
-def get_es_service():
-    if es_service is None:
-        raise Exception("Elasticsearch service not initialized")
-    return es_service
 
 
 # Create FastAPI app
@@ -95,9 +77,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Dependency injection
-app.dependency_overrides = {}
-
 # Include routers
 app.include_router(documents.router, prefix="/documents", tags=["documents"])
 app.include_router(search.router, prefix="/search", tags=["search"])
@@ -109,12 +88,13 @@ app.include_router(analytics.router, prefix="/analytics", tags=["analytics"])
 @app.get("/health", tags=["health"])
 async def health_check():
     try:
-        if es_client and es_client.ping():
-            return {"status": "healthy", "elasticsearch": "connected"}
-        else:
-            return {"status": "unhealthy", "elasticsearch": "disconnected"}
+        # Get service through proper dependency injection
+        service = dependencies.get_es_service()
+        # Simple check - if we can get the service, ES should be connected
+        await service.search_documents(limit=0)
+        return {"status": "healthy", "elasticsearch": "connected"}
     except Exception as e:
-        return {"status": "unhealthy", "error": str(e)}
+        return {"status": "unhealthy", "elasticsearch": "disconnected", "error": str(e)}
 
 
 # Root endpoint

@@ -1,10 +1,10 @@
 import logging
 from typing import List, Optional
-
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.dependencies import get_es_service
 from app.models import DocumentStatus, NewsCategory, SearchResponse
+from app.services.elasticsearch_service import ElasticsearchService
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ async def search_documents(
     status: Optional[DocumentStatus] = None,
     limit: int = Query(10, ge=1, le=100),
     offset: int = Query(0, ge=0),
-    service = Depends(get_es_service)
+    service: ElasticsearchService = Depends(get_es_service)
 ):
     """Advanced search with multiple filters"""
     try:

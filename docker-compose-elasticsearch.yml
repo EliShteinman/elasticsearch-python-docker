@@ -38,7 +38,7 @@ services:
       retries: 5
       start_period: 60s
 
-  Newsgroups:
+  newsgroups:
     build:
       context: app
       dockerfile: Dockerfile
@@ -52,6 +52,7 @@ services:
       - ELASTICSEARCH_HOST=elasticsearch
       - ELASTICSEARCH_PORT=9200
       - LOG_LEVEL=INFO
+      - ELASTICSEARCH_INDEX=newsgroups
     networks:
       - elastic_network
     healthcheck:

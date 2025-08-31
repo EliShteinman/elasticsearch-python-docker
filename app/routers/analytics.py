@@ -1,9 +1,9 @@
 import logging
-
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.dependencies import get_es_service
 from app.models import DocumentStatus, NewsCategory
+from app.services.elasticsearch_service import ElasticsearchService
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +12,7 @@ router = APIRouter()
 
 @router.get("/stats")
 async def get_analytics_stats(
-        service=Depends(get_es_service)
+        service: ElasticsearchService = Depends(get_es_service)
 ):
     """Get basic analytics about the document collection"""
     try:
@@ -52,7 +52,7 @@ async def get_analytics_stats(
 
 @router.get("/categories")
 async def get_category_breakdown(
-        service=Depends(get_es_service)
+        service: ElasticsearchService = Depends(get_es_service)
 ):
     """Get document count for all categories"""
     try:

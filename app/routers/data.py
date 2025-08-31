@@ -1,11 +1,11 @@
 import logging
 from typing import List, Optional
-
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 
 from app.dependencies import get_es_service
 from app.models import DocumentCreate
 from app.services.data_loader import NewsDataLoader
+from app.services.elasticsearch_service import ElasticsearchService
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ async def load_20newsgroups_data(
         subset: str = Query("train", description="Dataset subset: train, test, or all"),
         max_documents: int = Query(1000, ge=1, le=5000, description="Maximum documents to load"),
         categories: Optional[List[str]] = Query(None, description="Specific categories to load"),
-        service=Depends(get_es_service)
+        service: ElasticsearchService = Depends(get_es_service)
 ):
     """Load real data from 20newsgroups dataset"""
 
@@ -49,7 +49,7 @@ async def load_20newsgroups_data(
 @router.post("/load-sample")
 async def load_sample_data(
         background_tasks: BackgroundTasks,
-        service=Depends(get_es_service)
+        service: ElasticsearchService = Depends(get_es_service)
 ):
     """Load sample news data"""
 

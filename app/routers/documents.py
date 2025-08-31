@@ -1,21 +1,24 @@
 import logging
 from typing import List
-
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.dependencies import get_es_service
-from app.models import (BulkOperationResponse, DocumentCreate, DocumentResponse,
-                      DocumentUpdate)
+from app.models import (
+    BulkOperationResponse,
+    DocumentCreate,
+    DocumentResponse,
+    DocumentUpdate
+)
+from app.services.elasticsearch_service import ElasticsearchService
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-
 @router.post("/", response_model=DocumentResponse, status_code=201)
 async def create_document(
-        document: DocumentCreate,
-        service=Depends(get_es_service)
+    document: DocumentCreate,
+    service: ElasticsearchService = Depends(get_es_service)
 ):
     """Create a new document"""
     try:
@@ -26,11 +29,10 @@ async def create_document(
         logger.error(f"Failed to create document: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to create document: {str(e)}")
 
-
 @router.get("/{doc_id}", response_model=DocumentResponse)
 async def get_document(
-        doc_id: str,
-        service=Depends(get_es_service)
+    doc_id: str,
+    service: ElasticsearchService = Depends(get_es_service)
 ):
     """Get a document by ID"""
     try:
@@ -44,12 +46,11 @@ async def get_document(
         logger.error(f"Failed to get document {doc_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to retrieve document: {str(e)}")
 
-
 @router.put("/{doc_id}", response_model=DocumentResponse)
 async def update_document(
-        doc_id: str,
-        update_data: DocumentUpdate,
-        service=Depends(get_es_service)
+    doc_id: str,
+    update_data: DocumentUpdate,
+    service: ElasticsearchService = Depends(get_es_service)
 ):
     """Update a document"""
     try:
@@ -64,11 +65,10 @@ async def update_document(
         logger.error(f"Failed to update document {doc_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to update document: {str(e)}")
 
-
 @router.delete("/{doc_id}")
 async def delete_document(
-        doc_id: str,
-        service=Depends(get_es_service)
+    doc_id: str,
+    service: ElasticsearchService = Depends(get_es_service)
 ):
     """Delete a document"""
     try:
@@ -83,11 +83,10 @@ async def delete_document(
         logger.error(f"Failed to delete document {doc_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to delete document: {str(e)}")
 
-
 @router.post("/bulk", response_model=BulkOperationResponse)
 async def bulk_create_documents(
-        documents: List[DocumentCreate],
-        service=Depends(get_es_service)
+    documents: List[DocumentCreate],
+    service: ElasticsearchService = Depends(get_es_service)
 ):
     """Bulk create multiple documents"""
     if len(documents) > 1000:
