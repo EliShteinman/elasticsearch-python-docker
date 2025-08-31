@@ -8,20 +8,18 @@ ENV PYTHONUNBUFFERED=1 \
 # Create user
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
-# Set working directory
-WORKDIR /app
+# 1. Set working directory to a new root folder
+WORKDIR /code
 
-# Copy requirements first for better caching
+# 2. Copy requirements.txt to the new WORKDIR and install
 COPY requirements.txt .
-
-# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY . /app/
+# 3. Copy your application code into a subdirectory named 'app'
+COPY . /code/app
 
 # Change ownership
-RUN chown -R appuser:appuser /app
+RUN chown -R appuser:appuser /code
 
 # Switch to non-root user
 USER appuser
@@ -29,5 +27,5 @@ USER appuser
 # Expose port
 EXPOSE 8182
 
-# Run the application - same as it works on your machine
+# 4. Run the application using the full module path, which now works
 CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8182"]
