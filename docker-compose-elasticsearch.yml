@@ -1,4 +1,4 @@
-name: elasticsearch-stack-neria
+name: elasticsearch-stack-newsgroups
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:9.1.2
@@ -8,7 +8,7 @@ services:
       - xpack.security.enabled=false
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     volumes:
-      - elasticsearch_data_neria:/usr/share/elasticsearch/data
+      - elasticsearch_data_newsgroups:/usr/share/elasticsearch/data
     ports:
       - "9200:9200"
     networks:
@@ -38,25 +38,7 @@ services:
       retries: 5
       start_period: 60s
 
-  cerebro:
-    image: lmenezes/cerebro:latest
-    restart: unless-stopped
-    depends_on:
-      elasticsearch: { condition: service_healthy }
-    ports:
-      - "9000:9000"
-    environment:
-      - CEREBRO_PORT=9000
-    networks:
-      - elastic_network
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9000 || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-
-  neria:
+  Newsgroups:
     build:
       context: app
       dockerfile: Dockerfile
@@ -72,9 +54,15 @@ services:
       - LOG_LEVEL=INFO
     networks:
       - elastic_network
+    healthcheck:
+        test: ["CMD-SHELL", "curl -f http://localhost:8182/health || exit 1"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+        start_period: 60s
 
 volumes:
-  elasticsearch_data_neria:
+  elasticsearch_data_newsgroups:
 
 networks:
   elastic_network:
