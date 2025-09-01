@@ -43,3 +43,5 @@ htmlcov/
 *.tsv
 *.sqlite
 *.db
+
+*.md
