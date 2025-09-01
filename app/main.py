@@ -24,7 +24,7 @@ async def lifespan(app: FastAPI):
 
     try:
         # Initialize Elasticsearch client
-        es_url = f"{config.ELESTICSEARCH_WWW}://{config.ELESTICSEARCH_HOST}:{config.ELESTICSEARCH_PORT}/"
+        es_url = f"{config.ELASTICSEARCH_PROTOCOL}://{config.ELASTICSEARCH_HOST}:{config.ELASTICSEARCH_PORT}/"
         logger.info(f"Initializing Elasticsearch client with URL: {es_url}")
         es_client = Elasticsearch(es_url)
 
@@ -34,7 +34,7 @@ async def lifespan(app: FastAPI):
         logger.info("Elasticsearch connection successful")
 
         # Initialize service
-        es_service = ElasticsearchService(es_client, config.ELESTICSEARCH_INDEX)
+        es_service = ElasticsearchService(es_client, config.ELASTICSEARCH_INDEX)
         await es_service.initialize_index()
 
         # Set the service in dependencies (this is the proper way)

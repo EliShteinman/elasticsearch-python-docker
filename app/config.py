@@ -1,10 +1,10 @@
 import os
 
 # Elasticsearch Configuration
-ELESTICSEARCH_WWW = os.getenv("ELASTICSEARCH_WWW", "http")
-ELESTICSEARCH_HOST = os.getenv("ELASTICSEARCH_HOST", "localhost")
-ELESTICSEARCH_PORT = int(os.getenv("ELASTICSEARCH_PORT", 9200))
-ELESTICSEARCH_INDEX = os.getenv("ELASTICSEARCH_INDEX", "newsgroups")
+ELASTICSEARCH_PROTOCOL = os.getenv("ELASTICSEARCH_PROTOCOL", "http")
+ELASTICSEARCH_HOST = os.getenv("ELASTICSEARCH_HOST", "localhost")
+ELASTICSEARCH_PORT = int(os.getenv("ELASTICSEARCH_PORT", 9200))
+ELASTICSEARCH_INDEX = os.getenv("ELASTICSEARCH_INDEX", "newsgroups")
 
 # Logging Configuration
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")

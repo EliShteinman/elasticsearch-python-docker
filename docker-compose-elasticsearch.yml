@@ -48,7 +48,7 @@ services:
     ports:
       - "8182:8182"
     environment:
-      - ELASTICSEARCH_WWW=http
+      - ELASTICSEARCH_PROTOCOL=http
       - ELASTICSEARCH_HOST=elasticsearch
       - ELASTICSEARCH_PORT=9200
       - LOG_LEVEL=INFO
